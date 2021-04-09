@@ -699,7 +699,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     int mDeviceHardwareKeys;
 
     // Button wake control flags
-    boolean mHomeWakeScreen;
     boolean mBackWakeScreen;
     boolean mMenuWakeScreen;
     boolean mAssistWakeScreen;
@@ -720,6 +719,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mFocusReleasedGoToSleep;
     boolean mIsFocusPressed;
     boolean mIsLongPress;
+
+    boolean mHomeWakeButton;
 
     int mPointerLocationMode = 0; // guarded by mLock
 
@@ -1234,9 +1235,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.KEY_APP_SWITCH_LONG_PRESS_ACTION), false, this,
-                    UserHandle.USER_ALL);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.HOME_WAKE_SCREEN), false, this,
                     UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.BACK_WAKE_SCREEN), false, this,
@@ -2677,6 +2675,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mHandleVolumeKeysInWM = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_handleVolumeKeysInWindowManager);
 
+        mHomeWakeButton = mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_HomeWakeButton);
+
         readConfigurationDependentBehaviors();
 
         mDeviceHardwareKeys = mContext.getResources().getInteger(
@@ -3207,9 +3208,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 updateOrientationListenerLp(); // Enable, disable the orientation listener
             }
 
-            mHomeWakeScreen = (Settings.System.getIntForUser(resolver,
-                    Settings.System.HOME_WAKE_SCREEN, 1, UserHandle.USER_CURRENT) == 1)
-                    && ((mDeviceHardwareWakeKeys & KEY_MASK_HOME) != 0);
             mBackWakeScreen = (Settings.System.getIntForUser(resolver,
                     Settings.System.BACK_WAKE_SCREEN, 0, UserHandle.USER_CURRENT) == 1)
                     && ((mDeviceHardwareWakeKeys & KEY_MASK_BACK) != 0);
@@ -7447,15 +7445,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             }
 
-            case KeyEvent.KEYCODE_HOME:
-                if (down && !interactive) {
-                    isWakeKey = mHomeWakeScreen;
-                    if (!isWakeKey) {
-                        useHapticFeedback = false;
-                    }
-                }
-                break;
-
             case KeyEvent.KEYCODE_FOCUS:
                 if (down && !interactive && mCameraSleepOnRelease) {
                     mIsFocusPressed = true;
@@ -7497,6 +7486,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         isWakeKey = true;
                         startActivityAsUser(intent, UserHandle.CURRENT_OR_SELF);
                     }
+                }
+                break;
+
+            case KeyEvent.KEYCODE_HOME:
+                if (down && !interactive && mHomeWakeButton) {
+                    isWakeKey = true;
                 }
                 break;
 
