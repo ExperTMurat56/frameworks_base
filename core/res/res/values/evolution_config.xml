@@ -340,6 +340,9 @@
     <!-- min height for gesture action start -->
     <integer name="nav_gesture_swipe_start">20</integer>
 
+    <!-- True if the home button has the ability to wake up phone from lockscreen-->
+    <bool name="config_HomeWakeButton">true</bool>
+
     <!-- Smart charging battery percentage -->
     <integer name="config_smartChargingBatteryLevel">80</integer>
     <integer name="config_smartChargingBatteryResumeLevel">60</integer>
