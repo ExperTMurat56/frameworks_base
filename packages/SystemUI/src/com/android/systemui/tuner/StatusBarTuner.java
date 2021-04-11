@@ -16,6 +16,7 @@
 package com.android.systemui.tuner;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.provider.Settings;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import android.os.UserHandle;
 import android.support.v7.preference.Preference;
 import android.support.v14.preference.SwitchPreference;
 import android.support.v14.preference.PreferenceFragment;
+import android.support.v7.preference.PreferenceScreen;
 import android.view.MenuItem;
 
 import com.android.internal.logging.MetricsLogger;
@@ -32,6 +34,10 @@ import com.android.systemui.R;
 import com.android.internal.util.custom.cutout.CutoutUtils;
 
 public class StatusBarTuner extends PreferenceFragment {
+
+    private static final String NFC_KEY = "nfc";
+
+    private StatusBarSwitch mNfcSwitch;
 
     private static final String SHOW_FOURG = "show_fourg";
     private static final String SHOW_VOLTE = "show_volte";
@@ -65,6 +71,15 @@ public class StatusBarTuner extends PreferenceFragment {
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         addPreferencesFromResource(R.xml.status_bar_prefs);
+        final PreferenceScreen prefScreen = getPreferenceScreen();
+        final PackageManager pm = getActivity().getApplicationContext().getPackageManager();
+
+        mNfcSwitch = (StatusBarSwitch) findPreference(NFC_KEY);
+        final boolean isNfcAvailable = pm.hasSystemFeature(PackageManager.FEATURE_NFC);
+
+        if (!isNfcAvailable) {
+            prefScreen.removePreference(mNfcSwitch);
+        }
     }
 
     @Override
