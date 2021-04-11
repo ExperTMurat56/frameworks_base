@@ -15,16 +15,16 @@
         <item>On Bir</item>
     </string-array>
     <string-array name="type_clock_minutes">
-        <item>Saat</item>
-        <item>Bir</item>
-        <item>İki</item>
-        <item>Üç</item>
-        <item>Dört</item>
-        <item>Beş</item>
-        <item>Altı</item>
-        <item>Yedi</item>
-        <item>Sekiz</item>
-        <item>Dokuz</item>
+        <item>Çift Sıfır</item>
+        <item>Sıfır Bir</item>
+        <item>Sıfır İki</item>
+        <item>Sıfır Üç</item>
+        <item>Sıfır Dört</item>
+        <item>Sıfır Beş</item>
+        <item>Sıfır Altı</item>
+        <item>Sıfır Yedi</item>
+        <item>Sıfır Sekiz</item>
+        <item>Sıfır Dokuz</item>
         <item>On</item>
         <item>On Bir</item>
         <item>On İki</item>
