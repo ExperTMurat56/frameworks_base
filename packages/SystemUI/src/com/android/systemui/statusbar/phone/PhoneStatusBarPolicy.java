@@ -50,6 +50,7 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.nfc.NfcAdapter;
 import android.provider.Settings;
 import android.provider.Settings.Global;
 import android.service.notification.StatusBarNotification;
@@ -121,6 +122,7 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
     private final String mSlotVolume;
     private final String mSlotAlarmClock;
     private final String mSlotManagedProfile;
+    private final String mSlotNfc;
     private final String mSlotRotate;
     private final String mSlotHeadset;
     private final String mSlotDataSaver;
@@ -157,6 +159,10 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
 
     private BluetoothController mBluetooth;
     private AlarmManager.AlarmClockInfo mNextAlarm;
+    
+    private boolean mNfcVisible;
+    private NfcAdapter mAdapter;
+    private final Context mContext;           
 
     private boolean mShowBluetoothBattery;
 
@@ -192,6 +198,7 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
         mSlotRotate = context.getString(com.android.internal.R.string.status_bar_rotate);
         mSlotHeadset = context.getString(com.android.internal.R.string.status_bar_headset);
         mSlotDataSaver = context.getString(com.android.internal.R.string.status_bar_data_saver);
+        mSlotNfc = resources.getString(com.android.internal.R.string.status_bar_nfc);
         mSlotLocation = context.getString(com.android.internal.R.string.status_bar_location);
 
         // listen for broadcasts
@@ -204,6 +211,7 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
         filter.addAction(TelecomManager.ACTION_CURRENT_TTY_MODE_CHANGED);
         filter.addAction(Intent.ACTION_MANAGED_PROFILE_AVAILABLE);
         filter.addAction(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
+        filter.addAction(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED);
         filter.addAction(Intent.ACTION_MANAGED_PROFILE_REMOVED);
         mContext.registerReceiver(mIntentReceiver, filter, null, mHandler);
 
@@ -241,6 +249,12 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
         mIconController.setIcon(mSlotHotspot, R.drawable.stat_sys_hotspot,
                 mContext.getString(R.string.accessibility_status_bar_hotspot));
         mIconController.setIconVisibility(mSlotHotspot, mHotspot.isHotspotEnabled());
+   
+        mIconController.setIcon(mSlotNfc, R.drawable.stat_sys_nfc,
+                mResources.getString(R.string.accessibility_status_bar_nfc));
+
+        mIconController.setIconVisibility(mSlotNfc, false);
+        updateNfc();
 
         // managed profile
         mIconController.setIcon(mSlotManagedProfile, R.drawable.stat_sys_managed_profile_status,
@@ -368,6 +382,26 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
         return context.getString(R.string.accessibility_quick_settings_alarm, dateString);
     }
 
+    private NfcAdapter getAdapter() {
+        if (mAdapter == null) {
+            try {
+                mAdapter = NfcAdapter.getNfcAdapter(mContext);
+            } catch (UnsupportedOperationException e) {
+                mAdapter = null;
+            }
+        }
+        return mAdapter;
+    }
+
+    private final void updateNfc() {
+        mNfcVisible =  getAdapter() != null && getAdapter().isEnabled();
+        if (mNfcVisible) {
+            mIconController.setIconVisibility(mSlotNfc, true);
+        } else {
+            mIconController.setIconVisibility(mSlotNfc, false);
+        }
+    }                
+                
     private final void updateSimState(Intent intent) {
         String stateExtra = intent.getStringExtra(IccCardConstants.INTENT_KEY_ICC_STATE);
         if (IccCardConstants.INTENT_VALUE_ICC_ABSENT.equals(stateExtra)) {
@@ -910,6 +944,10 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
                 case BluetoothDevice.ACTION_BATTERY_LEVEL_CHANGED:
                     updateBluetooth();
                     break;
+                            
+                case NfcAdapter.ACTION_ADAPTER_STATE_CHANGED:
+                    updateNfc();
+                    break;                                   
             }
         }
     };
