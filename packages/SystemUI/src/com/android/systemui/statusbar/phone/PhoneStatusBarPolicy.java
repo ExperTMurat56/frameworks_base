@@ -154,15 +154,13 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
     private boolean mVolumeVisible;
     private boolean mCurrentUserSetup;
     private boolean mDockedStackExists;
+    private boolean mNfcVisible;
+    private NfcAdapter mAdapter;
 
     private boolean mManagedProfileIconVisible = false;
 
     private BluetoothController mBluetooth;
     private AlarmManager.AlarmClockInfo mNextAlarm;
-    
-    private boolean mNfcVisible;
-    private NfcAdapter mAdapter;
-    private final Context mContext;           
 
     private boolean mShowBluetoothBattery;
 
@@ -198,7 +196,7 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
         mSlotRotate = context.getString(com.android.internal.R.string.status_bar_rotate);
         mSlotHeadset = context.getString(com.android.internal.R.string.status_bar_headset);
         mSlotDataSaver = context.getString(com.android.internal.R.string.status_bar_data_saver);
-        mSlotNfc = resources.getString(com.android.internal.R.string.status_bar_nfc);
+        mSlotNfc = context.getString(com.android.internal.R.string.status_bar_nfc);
         mSlotLocation = context.getString(com.android.internal.R.string.status_bar_location);
 
         // listen for broadcasts
@@ -251,7 +249,7 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
         mIconController.setIconVisibility(mSlotHotspot, mHotspot.isHotspotEnabled());
    
         mIconController.setIcon(mSlotNfc, R.drawable.stat_sys_nfc,
-                mResources.getString(R.string.accessibility_status_bar_nfc));
+                mContext.getString(R.string.accessibility_status_bar_nfc));
 
         mIconController.setIconVisibility(mSlotNfc, false);
         updateNfc();
@@ -381,26 +379,6 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
 
         return context.getString(R.string.accessibility_quick_settings_alarm, dateString);
     }
-
-    private NfcAdapter getAdapter() {
-        if (mAdapter == null) {
-            try {
-                mAdapter = NfcAdapter.getNfcAdapter(mContext);
-            } catch (UnsupportedOperationException e) {
-                mAdapter = null;
-            }
-        }
-        return mAdapter;
-    }
-
-    private final void updateNfc() {
-        mNfcVisible =  getAdapter() != null && getAdapter().isEnabled();
-        if (mNfcVisible) {
-            mIconController.setIconVisibility(mSlotNfc, true);
-        } else {
-            mIconController.setIconVisibility(mSlotNfc, false);
-        }
-    }                
                 
     private final void updateSimState(Intent intent) {
         String stateExtra = intent.getStringExtra(IccCardConstants.INTENT_KEY_ICC_STATE);
@@ -424,6 +402,26 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
             }
         } else {
             mSimState = IccCardConstants.State.UNKNOWN;
+        }
+    }
+
+    private NfcAdapter getAdapter() {
+        if (mAdapter == null) {
+            try {
+                mAdapter = NfcAdapter.getNfcAdapter(mContext);
+            } catch (UnsupportedOperationException e) {
+                mAdapter = null;
+            }
+        }
+        return mAdapter;
+    }
+
+    private final void updateNfc() {
+        mNfcVisible =  getAdapter() != null && getAdapter().isEnabled();
+        if (mNfcVisible) {
+            mIconController.setIconVisibility(mSlotNfc, true);
+        } else {
+            mIconController.setIconVisibility(mSlotNfc, false);
         }
     }
 
@@ -944,7 +942,6 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
                 case BluetoothDevice.ACTION_BATTERY_LEVEL_CHANGED:
                     updateBluetooth();
                     break;
-                            
                 case NfcAdapter.ACTION_ADAPTER_STATE_CHANGED:
                     updateNfc();
                     break;                                   
