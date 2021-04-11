@@ -256,6 +256,11 @@
     <string name="accessibility_quick_settings_navbar_on">Sync on</string>
     <string name="accessibility_quick_settings_navbar_changed_off">Navigation bar turned off</string>
     <string name="accessibility_quick_settings_navbar_changed_on">Navigation bar turned on</string>
+    
+    <!-- Name of the nfc status bar icon. -->
+    <string name="status_bar_nfc">NFC</string>
+    <!-- Accessibility label for nfc icon (not shown on screen) [CHAR LIMIT=NONE] -->
+    <string name="accessibility_status_bar_nfc">NFC</string>
 
     <!-- Gaming Mode -->
     <string name="gaming_mode_tile_title">Gaming Mode</string>
